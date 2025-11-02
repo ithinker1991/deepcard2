@@ -8,8 +8,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.shared.config import get_settings
+from app.shared.logging_config import setup_logging, get_logger
 from app.interfaces.api.v1 import api_router
 
+
+# 设置日志
+setup_logging()
+logger = get_logger(__name__)
 
 settings = get_settings()
 
@@ -17,9 +22,15 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan events."""
+    logger.info("应用启动开始")
+
     # Startup tasks will be added here
+    logger.info("应用启动完成")
+
     yield
+
     # Shutdown tasks (if needed)
+    logger.info("应用关闭")
 
 
 # Create FastAPI application

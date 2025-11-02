@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepCard - 智能闪卡应用</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .user-selector {
+            margin-bottom: 20px;
+        }
+
+        .user-selector label {
+            font-weight: 600;
+            margin-right: 10px;
+            color: #333;
+        }
+
+        .user-selector select {
+            padding: 8px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .user-selector select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #333;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: #48bb78;
+        }
+
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+
+        .card-type {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .card-content {
+            margin-bottom: 20px;
+        }
+
+        .card-front {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .card-back {
+            background: #f0fff4;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #48bb78;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .tag {
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .card-actions .btn {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ddd;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #fc8181;
+        }
+
+        .success {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #9ae6b4;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .card-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🧠 DeepCard</h1>
+            <p>基于LLM的智能闪卡生成应用</p>
+        </header>
+
+        <div class="controls">
+            <div class="user-selector">
+                <label for="userId">用户ID:</label>
+                <select id="userId" onchange="refreshCards()">
+                    <option value="user1">用户1</option>
+                    <option value="user2">用户2</option>
+                    <option value="user3">用户3</option>
+                </select>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('list')">📚 我的卡片</button>
+                <button class="tab" onclick="switchTab('create')">➕ 创建卡片</button>
+                <button class="tab" onclick="switchTab('generate')">🤖 AI生成</button>
+            </div>
+
+            <!-- 卡片列表 -->
+            <div id="list-tab" class="tab-content active">
+                <div id="cards-container">
+                    <div class="loading">加载卡片中...</div>
+                </div>
+            </div>
+
+            <!-- 创建卡片 -->
+            <div id="create-tab" class="tab-content">
+                <form id="create-card-form" onsubmit="createCard(event)">
+                    <div class="form-group">
+                        <label for="cardTitle">卡片标题 *</label>
+                        <input type="text" id="cardTitle" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cardType">卡片类型 *</label>
+                            <select id="cardType" required onchange="updateCardTypeForm()">
+                                <option value="basic">基础卡片</option>
+                                <option value="cloze">填空题</option>
+                                <option value="qna">问答对</option>
+                                <option value="concept">概念卡</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cardTags">标签 (用逗号分隔)</label>
+                            <input type="text" id="cardTags" placeholder="例如: Python, 编程, 基础">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cardFront">正面内容 *</label>
+                        <input type="text" id="cardFront" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cardBack">背面内容 *</label>
+                        <input type="text" id="cardBack" required>
+                    </div>
+
+                    <div id="advanced-fields" style="display: none;">
+                        <!-- 填空题字段 -->
+                        <div id="cloze-fields" style="display: none;">
+                            <div class="form-group">
+                                <label for="clozeText">填空文本</label>
+                                <input type="text" id="clozeText" placeholder="例如: Python是一种{{编程语言}}">
+                            </div>
+                            <div class="form-group">
+                                <label for="clozeAnswer">空格答案</label>
+                                <input type="text" id="clozeAnswer" placeholder="例如: 编程语言">
+                            </div>
+                        </div>
+
+                        <!-- 问答对字段 -->
+                        <div id="qna-fields" style="display: none;">
+                            <div class="form-group">
+                                <label for="question">问题</label>
+                                <input type="text" id="question">
+                            </div>
+                            <div class="form-group">
+                                <label for="answer">答案</label>
+                                <input type="text" id="answer">
+                            </div>
+                        </div>
+
+                        <!-- 概念卡字段 -->
+                        <div id="concept-fields" style="display: none;">
+                            <div class="form-group">
+                                <label for="concept">概念名称</label>
+                                <input type="text" id="concept">
+                            </div>
+                            <div class="form-group">
+                                <label for="definition">概念定义</label>
+                                <input type="text" id="definition">
+                            </div>
+                            <div class="form-group">
+                                <label for="examples">示例 (用逗号分隔)</label>
+                                <input type="text" id="examples">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn">创建卡片</button>
+                </form>
+            </div>
+
+            <!-- AI生成 -->
+            <div id="generate-tab" class="tab-content">
+                <form id="generate-cards-form" onsubmit="generateCards(event)">
+                    <div class="form-group">
+                        <label for="sourceText">源文本 *</label>
+                        <textarea id="sourceText" required placeholder="输入要生成卡片的文本内容，例如：Python是一种高级编程语言，由Guido van Rossum于1991年首次发布..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="genCardType">卡片类型</label>
+                            <select id="genCardType">
+                                <option value="basic">基础卡片</option>
+                                <option value="cloze">填空题</option>
+                                <option value="qna">问答对</option>
+                                <option value="concept">概念卡</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="llmProvider">LLM提供商</label>
+                            <select id="llmProvider">
+                                <option value="siliconflow">SiliconFlow</option>
+                                <option value="openai">OpenAI</option>
+                                <option value="deepseek">DeepSeek</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxCards">最大生成数量</label>
+                        <input type="number" id="maxCards" min="1" max="10" value="5">
+                    </div>
+
+                    <button type="submit" class="btn btn-secondary">🚀 生成卡片</button>
+                </form>
+
+                <div id="generated-cards-container" style="margin-top: 30px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8004/api/v1';
+        let currentUserId = 'user1';
+        let cards = [];
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshCards();
+        });
+
+        // 切换标签页
+        function switchTab(tabName) {
+            // 更新标签按钮状态
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // 更新内容显示
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+
+            // 如果切换到列表页，刷新卡片
+            if (tabName === 'list') {
+                refreshCards();
+            }
+        }
+
+        // 获取当前用户ID
+        function getUserId() {
+            return document.getElementById('userId').value;
+        }
+
+        // 刷新卡片列表
+        async function refreshCards() {
+            currentUserId = getUserId();
+            const container = document.getElementById('cards-container');
+
+            try {
+                const response = await fetch(`${API_BASE}/cards?user_id=${currentUserId}`);
+                const data = await response.json();
+
+                cards = data.cards || [];
+                displayCards();
+            } catch (error) {
+                container.innerHTML = '<div class="error">加载卡片失败: ' + error.message + '</div>';
+            }
+        }
+
+        // 显示卡片列表
+        function displayCards() {
+            const container = document.getElementById('cards-container');
+
+            if (cards.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📝 还没有卡片</h3>
+                        <p>创建你的第一张卡片，或使用AI生成功能从文本生成卡片</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const cardsHtml = cards.map(card => createCardHtml(card)).join('');
+            container.innerHTML = `<div class="cards-grid">${cardsHtml}</div>`;
+        }
+
+        // 创建卡片HTML
+        function createCardHtml(card) {
+            const tags = card.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+            const createdDate = new Date(card.created_at).toLocaleString('zh-CN');
+
+            let contentHtml = '';
+            if (card.card_type === 'basic') {
+                contentHtml = `
+                    <div class="card-front"><strong>问题:</strong> ${card.content.front}</div>
+                    <div class="card-back"><strong>答案:</strong> ${card.content.back}</div>
+                `;
+            } else if (card.card_type === 'cloze') {
+                contentHtml = `
+                    <div class="card-front"><strong>填空题:</strong> ${card.content.cloze_text || card.content.front}</div>
+                    <div class="card-back"><strong>答案:</strong> ${card.content.cloze_answer || card.content.back}</div>
+                `;
+            } else if (card.card_type === 'qna') {
+                contentHtml = `
+                    <div class="card-front"><strong>问题:</strong> ${card.content.question || card.content.front}</div>
+                    <div class="card-back"><strong>答案:</strong> ${card.content.answer || card.content.back}</div>
+                `;
+            } else if (card.card_type === 'concept') {
+                const examples = card.content.examples ? card.content.examples.join(', ') : '';
+                contentHtml = `
+                    <div class="card-front"><strong>概念:</strong> ${card.content.concept || card.content.front}</div>
+                    <div class="card-back">
+                        <strong>定义:</strong> ${card.content.definition || card.content.back}<br>
+                        ${examples ? `<strong>示例:</strong> ${examples}` : ''}
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">${card.title}</h3>
+                        <span class="card-type">${getCardTypeLabel(card.card_type)}</span>
+                    </div>
+
+                    <div class="card-content">
+                        ${contentHtml}
+                    </div>
+
+                    <div class="card-meta">
+                        <span>创建时间: ${createdDate}</span>
+                        <span>${tags}</span>
+                    </div>
+
+                    <div class="card-actions">
+                        <button class="btn btn-danger" onclick="deleteCard('${card.id}')">删除</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 获取卡片类型标签
+        function getCardTypeLabel(type) {
+            const labels = {
+                'basic': '基础',
+                'cloze': '填空',
+                'qna': '问答',
+                'concept': '概念'
+            };
+            return labels[type] || type;
+        }
+
+        // 创建卡片
+        async function createCard(event) {
+            event.preventDefault();
+
+            const title = document.getElementById('cardTitle').value;
+            const cardType = document.getElementById('cardType').value;
+            const front = document.getElementById('cardFront').value;
+            const back = document.getElementById('cardBack').value;
+            const tagsInput = document.getElementById('cardTags').value;
+            const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()) : [];
+
+            let content = { front, back };
+
+            // 根据卡片类型构建内容
+            if (cardType === 'cloze') {
+                content.cloze_text = document.getElementById('clozeText').value || front;
+                content.cloze_answer = document.getElementById('clozeAnswer').value || back;
+            } else if (cardType === 'qna') {
+                content.question = document.getElementById('question').value || front;
+                content.answer = document.getElementById('answer').value || back;
+                content.front = '问答对';
+                content.back = '问答对';
+            } else if (cardType === 'concept') {
+                content.concept = document.getElementById('concept').value || front;
+                content.definition = document.getElementById('definition').value || back;
+                const examplesInput = document.getElementById('examples').value;
+                content.examples = examplesInput ? examplesInput.split(',').map(e => e.trim()) : [];
+                content.front = '概念';
+                content.back = '概念';
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/cards?user_id=${currentUserId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title,
+                        card_type: cardType,
+                        content,
+                        tags
+                    })
+                });
+
+                if (response.ok) {
+                    showMessage('卡片创建成功！', 'success');
+                    document.getElementById('create-card-form').reset();
+                    refreshCards();
+                    switchTab('list');
+                } else {
+                    const error = await response.json();
+                    showMessage('创建失败: ' + (error.detail || '未知错误'), 'error');
+                }
+            } catch (error) {
+                showMessage('创建失败: ' + error.message, 'error');
+            }
+        }
+
+        // 生成卡片
+        async function generateCards(event) {
+            event.preventDefault();
+
+            const text = document.getElementById('sourceText').value;
+            const cardType = document.getElementById('genCardType').value;
+            const provider = document.getElementById('llmProvider').value;
+            const maxCards = parseInt(document.getElementById('maxCards').value);
+
+            const container = document.getElementById('generated-cards-container');
+            container.innerHTML = '<div class="loading">AI正在生成卡片，请稍候...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/cards/generate?user_id=${currentUserId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text,
+                        card_type: cardType,
+                        provider,
+                        max_cards: maxCards,
+                        auto_save: true
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showMessage(`成功生成 ${result.total_saved} 张卡片！`, 'success');
+                    container.innerHTML = `
+                        <div class="success">
+                            <h3>🎉 生成完成！</h3>
+                            <p>共生成 ${result.total_generated} 张卡片，成功保存 ${result.total_saved} 张</p>
+                        </div>
+                    `;
+                    refreshCards();
+                } else {
+                    const error = await response.json();
+                    container.innerHTML = `<div class="error">生成失败: ${error.detail || '未知错误'}</div>`;
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="error">生成失败: ${error.message}</div>`;
+            }
+        }
+
+        // 删除卡片
+        async function deleteCard(cardId) {
+            if (!confirm('确定要删除这张卡片吗？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/cards/${cardId}?user_id=${currentUserId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showMessage('卡片删除成功', 'success');
+                    refreshCards();
+                } else {
+                    const error = await response.json();
+                    showMessage('删除失败: ' + (error.detail || '未知错误'), 'error');
+                }
+            } catch (error) {
+                showMessage('删除失败: ' + error.message, 'error');
+            }
+        }
+
+        // 更新卡片类型表单
+        function updateCardTypeForm() {
+            const cardType = document.getElementById('cardType').value;
+            const advancedFields = document.getElementById('advanced-fields');
+
+            // 隐藏所有高级字段
+            document.getElementById('cloze-fields').style.display = 'none';
+            document.getElementById('qna-fields').style.display = 'none';
+            document.getElementById('concept-fields').style.display = 'none';
+
+            // 根据卡片类型显示对应字段
+            if (cardType === 'cloze') {
+                advancedFields.style.display = 'block';
+                document.getElementById('cloze-fields').style.display = 'block';
+            } else if (cardType === 'qna') {
+                advancedFields.style.display = 'block';
+                document.getElementById('qna-fields').style.display = 'block';
+            } else if (cardType === 'concept') {
+                advancedFields.style.display = 'block';
+                document.getElementById('concept-fields').style.display = 'block';
+            } else {
+                advancedFields.style.display = 'none';
+            }
+        }
+
+        // 显示消息
+        function showMessage(message, type) {
+            // 移除现有消息
+            const existingMessage = document.querySelector('.error, .success');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+
+            // 创建新消息
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+
+            // 插入到容器顶部
+            const container = document.querySelector('.controls');
+            container.insertBefore(messageDiv, container.firstChild);
+
+            // 3秒后自动移除
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.remove();
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

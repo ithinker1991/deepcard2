@@ -48,6 +48,8 @@ cp .env.example .env
 
 **目标**: 验证FastAPI应用可以正常启动
 
+**自动化状态**: 🔧 手动测试 (需要启动服务器)
+
 **步骤**:
 ```bash
 cd backend
@@ -62,11 +64,18 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 **验收标准**: ✅ 服务器成功启动
 
+**自动化测试替代**:
+```bash
+source .venv/bin/activate && python -c "from app.main import app; print('✅ FastAPI app loaded successfully')"
+```
+
 ---
 
 ### 测试2: 健康检查API
 
 **目标**: 验证基础API端点正常工作
+
+**自动化状态**: ✅ 可自动化测试
 
 **步骤**:
 ```bash
@@ -85,11 +94,18 @@ curl -X GET "http://localhost:8000/health"
 
 **验收标准**: ✅ 返回正确的健康状态信息
 
+**自动化测试命令**:
+```bash
+source .venv/bin/activate && python -m pytest tests/test_happy_path.py::TestHappyPath::test_health_check_happy_path -v
+```
+
 ---
 
 ### 测试3: API文档验证
 
 **目标**: 验证API文档可访问
+
+**自动化状态**: ✅ 可自动化测试
 
 **步骤**:
 ```bash
@@ -100,11 +116,18 @@ curl -X GET "http://localhost:8000/docs"
 
 **验收标准**: ✅ API文档页面正常显示
 
+**自动化测试命令**:
+```bash
+source .venv/bin/activate && python -m pytest tests/test_happy_path.py::TestHappyPath::test_api_docs_happy_path -v
+```
+
 ---
 
 ### 测试4: LLM提供商列表
 
 **目标**: 验证LLM抽象层正常工作
+
+**自动化状态**: ✅ 可自动化测试
 
 **步骤**:
 ```bash
@@ -114,7 +137,7 @@ curl -X GET "http://localhost:8000/api/v1/llm/providers"
 **预期结果**:
 ```json
 {
-  "providers": ["openai", "deepseek"],
+  "providers": ["openai", "deepseek", "siliconflow"],
   "details": {
     "openai": {
       "models": ["gpt-3.5-turbo", "gpt-4", "gpt-4-turbo-preview"],
@@ -125,19 +148,31 @@ curl -X GET "http://localhost:8000/api/v1/llm/providers"
       "models": ["deepseek-chat", "deepseek-coder"],
       "default": "deepseek-chat",
       "description": "DeepSeek AI models"
+    },
+    "siliconflow": {
+      "models": ["deepseek-ai/DeepSeek-V3", "Qwen/Qwen2.5-7B-Instruct", "meta-llama/Llama-3.1-8B-Instruct"],
+      "default": "deepseek-ai/DeepSeek-V3",
+      "description": "SiliconFlow hosted models"
     }
   },
   "default_provider": "openai"
 }
 ```
 
-**验收标准**: ✅ 返回支持的LLM厂商列表
+**验收标准**: ✅ 返回支持的LLM厂商列表（包含SiliconFlow）
+
+**自动化测试命令**:
+```bash
+source .venv/bin/activate && python -m pytest tests/test_happy_path.py::TestHappyPath::test_get_llm_providers_happy_path -v
+```
 
 ---
 
 ### 测试5: LLM连通性测试（无真实API Key）
 
 **目标**: 验证LLM连接测试API的错误处理
+
+**自动化状态**: 🔧 手动测试 (依赖外部API响应)
 
 **步骤**:
 ```bash
@@ -159,11 +194,15 @@ curl -X POST "http://localhost:8000/api/v1/llm/test" \
 
 **验收标准**: ✅ 正确处理无效API密钥的情况
 
+**说明**: 此测试依赖外部API响应，无法完全自动化。可验证错误处理逻辑是否正常工作。
+
 ---
 
 ### 测试6: 文本生成测试（无真实API Key）
 
 **目标**: 验证文本生成API的错误处理
+
+**自动化状态**: 🔧 手动测试 (依赖外部API响应)
 
 **步骤**:
 ```bash
@@ -180,11 +219,15 @@ curl -X POST "http://localhost:8000/api/v1/llm/generate" \
 
 **验收标准**: ✅ 正确处理缺少API密钥的情况
 
+**说明**: 此测试依赖外部API响应，无法完全自动化。主要验证API参数验证和错误处理逻辑。
+
 ---
 
 ### 测试7: 自动化测试验证
 
 **目标**: 验证所有Happy Path测试通过
+
+**自动化状态**: ✅ 完全自动化测试
 
 **步骤**:
 ```bash
@@ -211,6 +254,8 @@ tests/test_happy_path.py::TestHappyPath::test_root_endpoint_happy_path PASSED [1
 ```
 
 **验收标准**: ✅ 所有8个测试通过
+
+**说明**: 这是核心的自动化测试套件，覆盖所有Happy Path功能。
 
 ---
 
@@ -255,17 +300,61 @@ curl -X POST "http://localhost:8000/api/v1/llm/generate" \
 
 ---
 
+## ⚡ 快速自动化验收
+
+**一键运行所有自动化测试**:
+```bash
+cd backend
+source .venv/bin/activate
+
+# 运行所有Happy Path测��
+python -m pytest tests/test_happy_path.py -v
+
+# 验证LLM工厂功能
+python -c "
+from app.infrastructure.llm import LLMFactory
+print('✅ LLM Providers:', LLMFactory.get_supported_providers())
+print('✅ SiliconFlow Models:', LLMFactory.get_provider_models('siliconflow')['models'])
+"
+
+# 验证应用加载
+python -c "from app.main import app; print('✅ FastAPI app loaded successfully')"
+```
+
+**预期结果**: 所有命令都显示成功信息，无错误
+
 ## ✅ 验收清单
 
 请逐项确认以下功能：
 
+### 🤖 自动化测试 (必须通过)
+- [ ] **自动化测试套件**: 运行 `python -m pytest tests/test_happy_path.py -v`
+- [ ] **LLM工厂测试**: 验证提供商和模型列表
+- [ ] **应用加载测试**: 验证FastAPI应用正常加载
+
+### 🔧 手动测试 (建议验证)
 - [ ] **基础架构**: FastAPI应用正常启动
 - [ ] **健康检查**: `/health` 端点返回正确信息
 - [ ] **API文档**: `/docs` 页面可访问
-- [ ] **LLM提供商**: `/api/v1/llm/providers` 返回厂商列表
+- [ ] **LLM提供商**: `/api/v1/llm/providers` 返回厂商列表（包含SiliconFlow）
 - [ ] **错误处理**: 无效API密钥时正确返回错误
-- [ ] **自动化测试**: 8个Happy Path测试全部通过
 - [ ] **可选**: 有API密钥时可进行完整功能测试
+
+## 📊 测试自动化状态总览
+
+| 测试项目 | 自动化状态 | 测试命令 | 验收重点 |
+|---------|-----------|---------|---------|
+| 基础架构验证 | 🔧 手动 | 启动服务器 | 应用启动 |
+| 健康检查API | ✅ 自动化 | pytest test_health_check | API响应 |
+| API文档验证 | ✅ 自动化 | pytest test_api_docs | 文档访问 |
+| LLM提供商列表 | ✅ 自动化 | pytest test_get_llm_providers | 提供商支持 |
+| LLM连通性测试 | 🔧 手动 | curl POST /test | 错误处理 |
+| 文本生成测试 | 🔧 手动 | curl POST /generate | API验证 |
+| 自动化测试套件 | ✅ 自动化 | pytest test_happy_path | 综合功能 |
+
+**自动化图标说明**:
+- ✅ **完全自动化**: 可通过pytest自动验证
+- 🔧 **手动测试**: 需要手动操作或依赖外部服务
 
 ## 🚨 注意事项
 
@@ -273,6 +362,7 @@ curl -X POST "http://localhost:8000/api/v1/llm/generate" \
 2. **专注Happy Path**: 不要测试边界情况和错误路径
 3. **记录问题**: 如果任何测试失败，记录具体错误信息
 4. **环境清理**: 测试完成后停止服务器
+5. **自动化优先**: 优先运行自动化测试，手动测试作为补充
 
 ## 📞 遇到问题？
 

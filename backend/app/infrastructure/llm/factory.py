@@ -6,6 +6,7 @@ from typing import Dict, Any
 from app.infrastructure.llm.base import LLMProvider, LLMConfigurationError
 from app.infrastructure.llm.openai import OpenAIProvider
 from app.infrastructure.llm.deepseek import DeepSeekProvider
+from app.infrastructure.llm.siliconflow import SiliconFlowProvider
 
 
 class LLMFactory:
@@ -15,6 +16,7 @@ class LLMFactory:
     _providers = {
         "openai": OpenAIProvider,
         "deepseek": DeepSeekProvider,
+        "siliconflow": SiliconFlowProvider,
     }
 
     @classmethod
@@ -50,6 +52,11 @@ class LLMFactory:
                 "models": ["deepseek-chat", "deepseek-coder"],
                 "default": "deepseek-chat",
                 "description": "DeepSeek AI models"
+            },
+            "siliconflow": {
+                "models": ["deepseek-ai/DeepSeek-V3", "Qwen/Qwen2.5-7B-Instruct", "meta-llama/Llama-3.1-8B-Instruct"],
+                "default": "deepseek-ai/DeepSeek-V3",
+                "description": "SiliconFlow hosted models"
             }
         }
         return models_config.get(provider_name, {})

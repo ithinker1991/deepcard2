@@ -39,6 +39,11 @@ class Settings(BaseSettings):
     DEEPSEEK_MODEL: str = "deepseek-chat"
     DEEPSEEK_BASE_URL: str = "https://api.deepseek.com/v1"
 
+    # SiliconFlow Settings
+    SILICONFLOW_API_KEY: str = ""
+    SILICONFLOW_MODEL: str = "deepseek-ai/DeepSeek-V3"
+    SILICONFLOW_BASE_URL: str = "https://api.siliconflow.cn/v1"
+
     # LLM Default Settings
     DEFAULT_LLM_PROVIDER: str = "openai"
     LLM_TIMEOUT: int = 30

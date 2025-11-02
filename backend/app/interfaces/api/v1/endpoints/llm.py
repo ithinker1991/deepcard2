@@ -53,6 +53,8 @@ async def test_llm_connection(request_data: Dict[str, Any]):
                 api_key = settings.OPENAI_API_KEY
             elif provider_name == "deepseek":
                 api_key = settings.DEEPSEEK_API_KEY
+            elif provider_name == "siliconflow":
+                api_key = settings.SILICONFLOW_API_KEY
             else:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -112,6 +114,9 @@ async def generate_text(request_data: Dict[str, Any]):
             elif provider_name == "deepseek":
                 api_key = settings.DEEPSEEK_API_KEY
                 model = model or settings.DEEPSEEK_MODEL
+            elif provider_name == "siliconflow":
+                api_key = settings.SILICONFLOW_API_KEY
+                model = model or settings.SILICONFLOW_MODEL
             else:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,

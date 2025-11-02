@@ -120,12 +120,30 @@
 
 详细计划参考: [回归测试计划](./docs/regression-testing-plan.md)
 
+### 🔧 未来功能规划
+
+#### 自动化测试配置化系统
+**实现优先级**: 里程碑2-4
+- 数据库测试开关
+- LLM调用测试开关
+- 外部API测试开关
+- 性能测试开关
+
+详细设计: [自动化测试配置需求](./docs/automated-testing-config.md)
+
+#### 任务跟踪系统
+**状态**: ✅ 已实现
+**内容**: 里程碑任务规划、优先级管理、依赖关系
+详细规划: [开发任务跟踪](./docs/development-tasks.md)
+
 ## 🔧 技术架构
 
 - **后端**: Python + FastAPI + SQLite + Redis
 - **前端**: React + Next.js + TypeScript + Tailwind CSS
-- **LLM**: 支持多厂商（OpenAI、DeepSeek、文心一言等）
+- **LLM**: 支持多厂商（OpenAI、DeepSeek、SiliconFlow等）
 - **架构**: DDD领域驱动设计
+- **测试**: 配置化自动化测试系统
+- **任务管理**: 里程碑跟踪和任务优先级系统
 
 ## 📝 开发原则
 
